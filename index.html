@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Traduzione e Conversione Valute</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>Traduzione e Conversione Valute</h1>
+
+    <label>Lingua di origine (OCR):</label>
+  <select id="sourceLang">
+    <option value="eng">Inglese</option>
+    <option value="ita">Italiano</option>
+    <option value="spa">Spagnolo</option>
+  </select>
+
+  <label>Lingua di destinazione:</label>
+  <select id="targetLang">
+    <option value="en">Inglese</option>
+    <option value="it">Italiano</option>
+    <option value="es">Spagnolo</option>
+  </select>
+
+  <label>Valuta di origine:</label>
+  <select id="sourceCurrency">
+    <option value="USD">USD</option>
+    <option value="EUR">EUR</option>
+  </select>
+
+  <label>Valuta di destinazione:</label>
+  <select id="targetCurrency">
+    <option value="USD">USD</option>
+    <option value="EUR">EUR</option>
+  </select>
+
+  <video id="video" autoplay playsinline></video>
+  <button onclick="capture()">Scatta dalla webcam</button>
+
+  <label>O carica un'immagine:</label>
+  <input type="file" accept="image/*" id="imageUpload" />
+  <img id="uploadedImage" style="display: none;" />
+
+  <canvas id="canvas" style="display:none;"></canvas>
+  <div id="output"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.1/dist/tesseract.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
