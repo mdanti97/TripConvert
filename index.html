@@ -110,6 +110,13 @@ footer{color:var(--muted);font-size:.85rem;padding-block:0 40px}
 .tag{display:inline-block;font-family:var(--f-display);font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
 
 /* Statistiche */
+.statbar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between;color:var(--muted);font-size:.85rem;margin-bottom:10px}
+.chk{display:flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--olive)}
+button.sort{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+button.sort:hover{color:var(--olive)}
+button.sort:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+
 .tablist button.stat{border-style:dashed}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:14px 0 22px}
 .tile{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
@@ -214,16 +221,21 @@ function renderStats(){
   const maxT=rows[0].tot, days=new Set(E.map(e=>e.date)).size;
   const top=rows.filter(r=>r.tot===maxT).map(r=>r.n).join(" e ");
   const cur=years[0], nuovi=rows.filter(r=>r.by[cur]>0&&r.tot===r.by[cur]).map(r=>r.n);
-  const elig=rows.filter(r=>r.cnt>=3&&r.avg!==null&&r.n!=="Matte");
+  const elig=rows.filter(r=>r.tot>=3&&r.avg!==null);
   const best=[...elig].sort((a,b)=>b.avg-a.avg)[0], worst=[...elig].sort((a,b)=>a.avg-b.avg)[0];
   const f1=v=>v===null?"–":v.toFixed(1).replace(".",",");
   let h=`<div class="season-head"><h2>Statistiche</h2><span>Le presenze dal 2021 a oggi</span></div>`;
   h+=`<div class="tiles"><div class="tile"><b>${days}</b><span>giornate con pagelle</span></div><div class="tile"><b>${rows.length}</b><span>partecipanti diversi</span></div><div class="tile"><b class="pen">${maxT}</b><span>presenze record: ${esc(top)}</span></div><div class="tile"><b>${nuovi.length}</b><span>debuttanti ${cur}${nuovi.length?": "+esc(nuovi.join(", ")):""}</span></div>${best?`<div class="tile"><b>${f1(best.avg)}</b><span>media più alta: ${esc(best.n)}</span></div>`:""}${worst?`<div class="tile"><b>${f1(worst.avg)}</b><span>fanalino di coda: ${esc(worst.n)}</span></div>`:""}</div>`;
-  h+=`<div class="tablewrap"><table class="pres"><thead><tr><th class="n">Nome</th>${ys.map(y=>`<th>${y}</th>`).join("")}<th class="n">Presenze</th><th>Media</th></tr></thead><tbody>`;
-  for(const r of rows){
+  let vis=statAll?rows:rows.filter(r=>r.tot>=3);
+  const dir=statDir;
+  vis=[...vis].sort((a,b)=>{let x,y;if(statSort==="avg"){x=a.avg??-1;y=b.avg??-1}else if(statSort==="n"){return dir*a.n.localeCompare(b.n)}else{x=a.tot;y=b.tot}return dir*(y-x)||a.n.localeCompare(b.n)});
+  const arr=k=>statSort===k?(dir===1?" ▼":" ▲"):"";
+  h+=`<div class="statbar"><span>Ordina toccando le intestazioni della tabella.</span><label class="chk"><input type="checkbox" id="statall" ${statAll?"checked":""}> Mostra anche chi ha meno di 3 presenze</label></div>`;
+  h+=`<div class="tablewrap"><table class="pres"><thead><tr><th class="n"><button type="button" class="sort" data-sort="n">Nome${arr("n")}</button></th>${ys.map(y=>`<th>${y}</th>`).join("")}<th class="n"><button type="button" class="sort" data-sort="tot">Presenze${arr("tot")}</button></th><th><button type="button" class="sort" data-sort="avg">Media${arr("avg")}</button></th></tr></thead><tbody>`;
+  for(const r of vis){
     h+=`<tr${r.n==="Matte"?' class="prof"':""}><td class="n">${esc(r.n)}</td>${ys.map(y=>`<td${r.by[y]?"":' class="z"'}>${r.by[y]||"·"}</td>`).join("")}<td class="tot"><span class="bar" style="width:${Math.round(90*r.tot/maxT)}px"></span>${r.tot}</td><td>${f1(r.avg)}</td></tr>`;
   }
-  h+=`</tbody></table></div><p class="statnote">Una presenza è una giornata con la pagella. I weekend raccontati in un unico Pagellino contano come una giornata. Nel 2022 e nel 2023 i Pagellini coprono solo due giornate per stagione. Media: + e − valgono un quarto di voto, i voti oltre il 10 contano come 10. Media più alta e fanalino di coda considerano chi ha almeno 3 pagelle; il professore è fuori classifica.</p>`;
+  h+=`</tbody></table></div><p class="statnote">${statAll?"":`Sono nascosti ${rows.length-vis.length} partecipanti con meno di 3 presenze. `}Una presenza è una giornata con la pagella; i weekend raccontati in un unico Pagellino contano come una giornata. Nel 2022 e nel 2023 i Pagellini coprono solo due giornate per stagione. Media: + e − valgono un quarto di voto, i voti oltre il 10 contano per intero (10+3+3 vale 16), i voti in trentesimi sono riportati in decimi. Media più alta e fanalino di coda considerano chi ha almeno 3 presenze.</p>`;
   return h;
 }
 
@@ -239,11 +251,11 @@ function votoNum(v,e){
   const add=rest.match(/\+\s*\d+/g); if(add) add.forEach(a=>n+=parseFloat(a.replace(/[^\d]/g,"")));
   rest=rest.replace(/[+-]\s*\d+/g,"");
   n+=(rest.match(/\+/g)||[]).length*0.25-(rest.match(/-/g)||[]).length*0.25;
-  return Math.max(0,Math.min(10,n));
+  return Math.max(0,n);
 }
 function media(list){const a=list.map(e=>votoNum(e.voto,e)).filter(v=>v!==null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null}
 
-let personSel=null;
+let personSel=null, statSort="tot", statDir=1, statAll=false;
 function peopleIndex(){
   const m={};
   for(const e of E){const n=canon(e);(m[n]=m[n]||[]).push(e)}
@@ -303,7 +315,8 @@ $("#tabs").addEventListener("click",ev=>{const b=ev.target.closest("button[data-
   const top=$(".tabs").offsetTop;if(window.scrollY>top)window.scrollTo({top});b.scrollIntoView({block:"nearest",inline:"center"})});
 $("#out").addEventListener("click",ev=>{const a=ev.target.closest("a[data-jump]");if(!a)return;ev.preventDefault();const el=document.getElementById(a.dataset.jump);if(el)el.scrollIntoView({behavior:"smooth"})});
 $("#q").addEventListener("input",render);
-document.addEventListener("click",ev=>{const p=ev.target.closest("[data-p]");if(p){openPerson(p.dataset.p);return}const bk=ev.target.closest("[data-back]");if(bk){personSel=null;render();window.scrollTo({top:$(".tabs").offsetTop})}});
+document.addEventListener("change",ev=>{if(ev.target.id==="statall"){statAll=ev.target.checked;render()}});
+document.addEventListener("click",ev=>{const s=ev.target.closest("[data-sort]");if(s){const k=s.dataset.sort;if(statSort===k)statDir=-statDir;else{statSort=k;statDir=k==="n"?1:1}render();return}const p=ev.target.closest("[data-p]");if(p){openPerson(p.dataset.p);return}const bk=ev.target.closest("[data-back]");if(bk){personSel=null;render();window.scrollTo({top:$(".tabs").offsetTop})}});
 const lb=$("#lb");
 document.addEventListener("click",ev=>{const b=ev.target.closest(".ph");if(!b)return;$("#lbimg").src=b.dataset.src;$("#lbimg").alt=b.dataset.cap;$("#lbcap").textContent=b.dataset.cap;lb.showModal()});
 $("#lbx").addEventListener("click",()=>lb.close());
