@@ -92,35 +92,26 @@ dialog p{color:#f3f5ec;font-family:var(--f-display);text-align:center;margin:10p
 footer{color:var(--muted);font-size:.85rem;padding-block:0 40px}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
 
-/* Novità */
-.news{padding-block:8px 34px}
-.news-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:6px}
-.badge{font-family:var(--f-display);font-weight:800;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;background:var(--pen);color:var(--paper);padding:5px 10px;border-radius:999px}
-.news-head h2{font-family:var(--f-display);font-weight:800;font-size:clamp(1.8rem,4.6vw,2.8rem);margin:0;letter-spacing:-.01em;text-wrap:balance}
-.news-sub{color:var(--muted);font-family:var(--f-display);margin:0 0 18px}
-.sep{border:0;border-top:2px dashed var(--line);margin:0}
-/* Archivio */
-.arch-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-block:28px 6px}
-.arch-head h2{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,4vw,2.4rem);margin:0}
-.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start;padding-block:10px 60px}
-.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto;padding-right:4px}
-.side details{border-bottom:1px solid var(--line);padding-block:6px}
-.side summary{font-family:var(--f-display);font-weight:800;font-size:1.15rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink)}
-.side summary::-webkit-details-marker{display:none}
-.side summary small{font-weight:500;color:var(--muted);font-size:.8rem}
-.side a{display:block;padding:5px 8px;margin:2px 0;border-radius:6px;color:var(--olive);text-decoration:none;font-size:.92rem;font-variant-numeric:tabular-nums}
-.side a:hover,.side a:focus-visible{background:var(--olive-soft);outline:none}
-.side a.on{background:var(--olive);color:var(--paper)}
-.chips{display:none}
-.content{min-width:0}
-.day{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 70px)}
-@media (max-width:820px){
-  .layout{grid-template-columns:minmax(0,1fr);gap:0}
-  .side{display:none}
-  .chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);scrollbar-width:thin}
-  .chips a{flex:none;font-family:var(--f-display);font-weight:800;font-size:.85rem;border:1.5px solid var(--olive);color:var(--olive);text-decoration:none;padding:6px 12px;border-radius:999px;white-space:nowrap}
-  .chips a.y{background:var(--olive);color:var(--paper)}
-}
+
+/* Barra tab */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);border-block:1px solid var(--line)}
+.tabs .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-block:10px}
+.tablist{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0;padding-block:2px}
+.tablist::-webkit-scrollbar{display:none}
+.tablist button{flex:none;font-family:var(--f-display);font-weight:800;font-size:.95rem;border:1.5px solid var(--olive);background:transparent;color:var(--olive);padding:6px 14px;border-radius:999px;cursor:pointer;font-variant-numeric:tabular-nums}
+.tablist button.new{border-color:var(--pen);color:var(--pen)}
+.tablist button[aria-selected="true"]{background:var(--olive);color:var(--paper)}
+.tablist button.new[aria-selected="true"]{background:var(--pen);color:var(--paper)}
+.tablist button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+.tabs .search{flex:1 1 220px;max-width:320px;margin-left:0}
+main{padding-block:22px 60px}
+.badge{font-family:var(--f-display);font-weight:800;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;background:var(--pen);color:var(--paper);padding:5px 10px;border-radius:999px}
+.daychips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px 0 2px;margin-top:10px}
+.daychips::-webkit-scrollbar{display:none}
+.daychips a{flex:none;font-size:.85rem;color:var(--olive);text-decoration:none;border:1px solid var(--line);background:var(--paper);padding:5px 10px;border-radius:999px;white-space:nowrap}
+.daychips a:hover{border-color:var(--olive)}
+.day,.season-head{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 72px)}
+@media (max-width:600px){.tabs .search{max-width:none}}
 </style>
 </head>
 <body>
@@ -132,25 +123,12 @@ footer{color:var(--muted);font-size:.85rem;padding-block:0 40px}
   <div class="facts" id="facts"></div>
 </div></header>
 
-<section class="news" id="novita" aria-labelledby="news-title"><div class="wrap">
-  <div class="news-head"><span class="badge">Nuovo</span><h2 id="news-title"></h2></div>
-  <p class="news-sub" id="news-sub"></p>
-  <div class="grid" id="news-grid"></div>
-</div></section>
+<nav class="tabs" aria-label="Sezioni"><div class="wrap">
+  <div class="tablist" id="tabs" role="tablist"></div>
+  <label class="search"><span hidden>Cerca</span><input id="q" type="search" placeholder="Cerca un nome, un soprannome…" autocomplete="off"></label>
+</div></nav>
 
-<hr class="sep">
-
-<section aria-labelledby="arch-title"><div class="wrap">
-  <div class="arch-head"><h2 id="arch-title">Archivio</h2>
-    <label class="search"><span hidden>Cerca</span><input id="q" type="search" placeholder="Cerca un nome, un soprannome, una frase…" autocomplete="off"></label>
-  </div>
-  <nav class="chips" id="chips" aria-label="Giornate"></nav>
-  <div class="layout">
-    <nav class="side" id="side" aria-label="Stagioni e giornate"></nav>
-    <div class="content" id="out"></div>
-  </div>
-</div></section>
-
+<main><div class="wrap" id="out"></div></main>
 <footer><div class="wrap">Pagelle del professore Matte, dal 2021. Foto dalla chat di famiglia.</div></footer>
 
 <dialog id="lb"><button class="close" id="lbx" aria-label="Chiudi">×</button><img id="lbimg" alt=""><p id="lbcap"></p></dialog>
@@ -164,11 +142,13 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const fmt=d=>{if(LABELS[d])return LABELS[d];const [y,m,g]=d.split("-");return `${+g} ${MESI[+m-1]} ${y}`};
 const allDays=[...new Set(E.map(e=>e.date).concat(Object.keys(NOTES)))].sort();
 const latest=[...new Set(E.map(e=>e.date))].sort().pop();
-const archDays=allDays.filter(d=>d!==latest).reverse();
-const years=[...new Set(archDays.map(d=>d.slice(0,4)))];
+const years=[...new Set(allDays.map(d=>d.slice(0,4)))].sort().reverse();
 const isProf=e=>/^(matte|matteo d\.)$/i.test(e.name)||(/^matteo$/i.test(e.name)&&e.year==="2021");
 
-$("#facts").innerHTML=`<span><b>${new Set(E.map(e=>e.year)).size}</b> stagioni</span><span><b>${allDays.length}</b> giornate</span><span><b>${E.length}</b> pagelle</span><span>Voto del professore: <b>sempre 10</b></span>`;
+$("#facts").innerHTML=`<span><b>${years.length}</b> stagioni</span><span><b>${allDays.length}</b> giornate</span><span><b>${E.length}</b> pagelle</span><span>Voto del professore: <b>sempre 10</b></span>`;
+
+let tab="novita";
+try{const h=location.hash.slice(1);if(h==="novita"||(/^y\d{4}$/.test(h)&&years.includes(h.slice(1))))tab=h}catch(e){}
 
 function hl(t,q){if(!q)return esc(t);const i=t.toLowerCase().indexOf(q);if(i<0)return esc(t);return esc(t.slice(0,i))+"<mark>"+esc(t.slice(i,i+q.length))+"</mark>"+esc(t.slice(i+q.length))}
 function card(e,q){
@@ -179,56 +159,49 @@ function card(e,q){
     ${e.title?`<div class="stamp">${hl(e.title,q)}</div>`:""}
   </div></article>`;
 }
-function daySection(d,items,q){
-  let h=`<section class="day" id="d${d}"><h3>${fmt(d)} ${items.length?`<small>${items.length} pagelle</small>`:""}</h3>`;
+function daySection(d,items,q,showTitle=true){
+  let h=`<section class="day" id="d${d}">`;
+  if(showTitle) h+=`<h3>${fmt(d)} ${items.length?`<small>${items.length} pagelle</small>`:""}</h3>`;
   if(NOTES[d]&&!q) h+=`<p class="note">${esc(NOTES[d])}</p>`;
   if(items.length) h+=`<div class="grid">${items.map(e=>card(e,q)).join("")}</div>`;
   return h+`</section>`;
 }
-// Novità
-const li=E.filter(e=>e.date===latest);
-$("#news-title").textContent=`Il Pagellino del ${fmt(latest)}`;
-$("#news-sub").textContent=`${li.length} pagelle fresche di frantoio.${NOTES[latest]?" "+NOTES[latest]:""}`;
-$("#news-grid").innerHTML=li.map(e=>card(e,"")).join("");
-
-// Navigazione archivio
-$("#side").innerHTML=years.map((y,i)=>{const ds=archDays.filter(d=>d.startsWith(y));const n=E.filter(e=>e.year===y&&e.date!==latest).length;
-  return `<details ${i<2?"open":""}><summary>${y} <small>${n} pagelle</small></summary>${ds.map(d=>`<a href="#d${d}" data-d="${d}">${fmt(d).replace(" "+y,"")}</a>`).join("")}</details>`}).join("");
-$("#chips").innerHTML=years.map(y=>`<a class="y" href="#d${archDays.find(d=>d.startsWith(y))}">${y}</a>`+archDays.filter(d=>d.startsWith(y)).map(d=>`<a href="#d${d}">${fmt(d).replace(" "+y,"")}</a>`).join("")).join("");
-
+function renderTabs(){
+  const q=$("#q").value.trim();
+  $("#tabs").innerHTML=`<button type="button" role="tab" class="new" data-t="novita" aria-selected="${!q&&tab==="novita"}">Novità</button>`+
+    years.map(y=>`<button type="button" role="tab" data-t="y${y}" aria-selected="${!q&&tab==="y"+y}">${y}</button>`).join("");
+}
 function render(){
   const q=$("#q").value.trim().toLowerCase();
+  renderTabs();
   let h="";
   if(q){
     const list=E.filter(e=>(e.name+" "+e.title+" "+e.text).toLowerCase().includes(q));
     h+=`<div class="season-head"><h2>Risultati</h2><span>${list.length} pagelle per “${esc(q)}”</span></div>`;
     if(!list.length) h+=`<p class="empty">Nessuna pagella trovata. Prova con un altro nome o soprannome.</p>`;
-    const ds=[...new Set(list.map(e=>e.date))].sort().reverse();
-    for(const d of ds) h+=daySection(d,list.filter(e=>e.date===d),q);
+    for(const d of [...new Set(list.map(e=>e.date))].sort().reverse()) h+=daySection(d,list.filter(e=>e.date===d),q);
+  } else if(tab==="novita"){
+    const items=E.filter(e=>e.date===latest);
+    h+=`<div class="season-head"><span class="badge">Nuovo</span><h2>${fmt(latest)}</h2><span>${items.length} pagelle fresche di frantoio</span></div>`;
+    h+=daySection(latest,items,"",false);
   } else {
-    for(const y of years){
-      const n=E.filter(e=>e.year===y&&e.date!==latest).length;
-      h+=`<div class="season-head" id="y${y}"><h2>Stagione ${y}</h2><span>${archDays.filter(d=>d.startsWith(y)).length} giornate · ${n} pagelle</span></div>`;
-      for(const d of archDays.filter(d=>d.startsWith(y))) h+=daySection(d,E.filter(e=>e.date===d),"");
-    }
+    const y=tab.slice(1), ds=allDays.filter(d=>d.startsWith(y)).reverse();
+    const n=E.filter(e=>e.year===y).length;
+    h+=`<div class="season-head"><h2>Stagione ${y}</h2><span>${ds.length} ${ds.length===1?"giornata":"giornate"} · ${n} pagelle</span></div>`;
+    if(ds.length>1) h+=`<nav class="daychips" aria-label="Giornate ${y}">${ds.map(d=>`<a href="#d${d}" data-jump="d${d}">${fmt(d).replace(" "+y,"")}</a>`).join("")}</nav>`;
+    for(const d of ds) h+=daySection(d,E.filter(e=>e.date===d),"");
   }
   $("#out").innerHTML=h;
-  observe();
 }
-let io;
-function observe(){
-  if(io)io.disconnect();
-  if(!("IntersectionObserver" in window))return;
-  io=new IntersectionObserver(es=>{for(const en of es){if(en.isIntersecting){const d=en.target.id.slice(1);document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("on",a.dataset.d===d))}}},{rootMargin:"-20% 0px -70% 0px"});
-  document.querySelectorAll("#out .day").forEach(s=>io.observe(s));
-}
+$("#tabs").addEventListener("click",ev=>{const b=ev.target.closest("button[data-t]");if(!b)return;tab=b.dataset.t;$("#q").value="";try{history.replaceState(null,"","#"+tab)}catch(e){}render();
+  const top=$(".tabs").offsetTop;if(window.scrollY>top)window.scrollTo({top});b.scrollIntoView({block:"nearest",inline:"center"})});
+$("#out").addEventListener("click",ev=>{const a=ev.target.closest("a[data-jump]");if(!a)return;ev.preventDefault();const el=document.getElementById(a.dataset.jump);if(el)el.scrollIntoView({behavior:"smooth"})});
 $("#q").addEventListener("input",render);
 const lb=$("#lb");
 document.addEventListener("click",ev=>{const b=ev.target.closest(".ph");if(!b)return;$("#lbimg").src=b.dataset.src;$("#lbimg").alt=b.dataset.cap;$("#lbcap").textContent=b.dataset.cap;lb.showModal()});
 $("#lbx").addEventListener("click",()=>lb.close());
 lb.addEventListener("click",ev=>{if(ev.target===lb)lb.close()});
 render();
-try{const h=location.hash.slice(1);if(h){const el=document.getElementById(h);if(el)setTimeout(()=>el.scrollIntoView(),50)}}catch(e){}
 </script>
 
 </body>
