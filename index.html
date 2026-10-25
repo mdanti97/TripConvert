@@ -146,15 +146,20 @@ table.pres tr.prof .bar{background:var(--pen)}
 
 /* Barra tab */
 .tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);border-block:1px solid var(--line)}
-.tabs .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-block:10px}
-.tablist{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1 1 auto;min-width:0;padding-block:2px}
+.tabs .wrap{display:flex;flex-direction:column;gap:8px;padding-block:10px}
+.sections{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:420px}
+.sections button{font-family:var(--f-display);font-weight:800;font-size:.95rem;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer}
+.sections button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.sections button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+main .search{display:block;max-width:420px;margin-bottom:6px}
+.tablist{display:flex;flex-wrap:wrap;gap:6px;min-width:0;padding-block:2px}
 .tablist::-webkit-scrollbar{display:none}
 .tablist button{flex:none;font-family:var(--f-display);font-weight:800;font-size:.95rem;border:1.5px solid var(--olive);background:transparent;color:var(--olive);padding:6px 14px;border-radius:999px;cursor:pointer;font-variant-numeric:tabular-nums}
 .tablist button.new{border-color:var(--pen);color:var(--pen)}
 .tablist button[aria-selected="true"]{background:var(--olive);color:var(--paper)}
 .tablist button.new[aria-selected="true"]{background:var(--pen);color:var(--paper)}
 .tablist button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
-.tabs .search{flex:1 1 220px;max-width:320px;margin-left:0}
+@media (max-width:480px){.tablist button{padding:5px 11px;font-size:.88rem}}
 main{padding-block:22px 60px}
 .badge{font-family:var(--f-display);font-weight:800;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;background:var(--pen);color:var(--paper);padding:5px 10px;border-radius:999px}
 .daychips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px 0 2px;margin-top:10px}
@@ -162,7 +167,7 @@ main{padding-block:22px 60px}
 .daychips a{flex:none;font-size:.85rem;color:var(--olive);text-decoration:none;border:1px solid var(--line);background:var(--paper);padding:5px 10px;border-radius:999px;white-space:nowrap}
 .daychips a:hover{border-color:var(--olive)}
 .day,.season-head{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 72px)}
-@media (max-width:600px){.tabs .search{max-width:none}}
+
 </style>
 </head>
 <body>
@@ -175,11 +180,14 @@ main{padding-block:22px 60px}
 </div></header>
 
 <nav class="tabs" aria-label="Sezioni"><div class="wrap">
+  <div class="sections" id="tabs-top" role="tablist"></div>
   <div class="tablist" id="tabs" role="tablist"></div>
-  <label class="search"><span hidden>Cerca</span><input id="q" type="search" placeholder="Cerca un nome, un soprannome…" autocomplete="off"></label>
 </div></nav>
 
-<main><div class="wrap" id="out"></div></main>
+<main><div class="wrap">
+  <label class="search"><span hidden>Cerca</span><input id="q" type="search" placeholder="Cerca un nome, un soprannome…" autocomplete="off"></label>
+  <div id="out"></div>
+</div></main>
 <footer><div class="wrap">Pagelle del professore Matte, dal 2021. Foto dalla chat di famiglia.</div></footer>
 
 <dialog id="lb"><button class="close" id="lbx" aria-label="Chiudi">×</button><img id="lbimg" alt=""><p id="lbcap"></p></dialog>
@@ -213,7 +221,7 @@ function card(e,q,showDate){
 }
 function daySection(d,items,q,showTitle=true){
   let h=`<section class="day" id="d${d}">`;
-  if(showTitle) h+=`<h3>${fmt(d)} ${items.length?`<small>${items.length} pagelle</small>`:""}</h3>`;
+  if(showTitle) h+=`<h3>${fmt(d)} ${items.length?`<small>${items.length} ${items.length===1?"pagella":"pagelle"}</small>`:""}</h3>`;
   if(NOTES[d]&&!q) h+=`<p class="note">${esc(NOTES[d])}</p>`;
   if(items.length) h+=`<div class="grid">${items.map(e=>card(e,q)).join("")}</div>`;
   return h+`</section>`;
@@ -281,7 +289,7 @@ function renderPeople(){
     let h=`<button type="button" class="back" data-back="1">← Tutti i partecipanti</button>`;
     h+=`<div class="season-head"><h2>${esc(personSel)}</h2><span>${days} presenze · ${list.length} pagelle · voto medio ${avg}</span></div>`;
     const ys=[...new Set(list.map(e=>e.year))];
-    for(const y of ys){h+=`<section class="day"><h3>${y} <small>${list.filter(e=>e.year===y).length} pagelle</small></h3><div class="grid">${list.filter(e=>e.year===y).map(e=>card(e,"",true)).join("")}</div></section>`}
+    for(const y of ys){h+=`<section class="day"><h3>${y} <small>${(n=>n+(n===1?" pagella":" pagelle"))(list.filter(e=>e.year===y).length)}</small></h3><div class="grid">${list.filter(e=>e.year===y).map(e=>card(e,"",true)).join("")}</div></section>`}
     return h;
   }
   const rows=Object.entries(m).map(([n,l])=>({n,l,c:l.length,ph:[...l].sort((a,b)=>b.date.localeCompare(a.date)).find(e=>e.photo)})).sort((a,b)=>b.c-a.c||a.n.localeCompare(b.n));
@@ -294,7 +302,8 @@ function openPerson(n){tab="people";personSel=n;$("#q").value="";try{history.rep
 function renderTabs(){
   const q=$("#q").value.trim();
   $("#tabs").innerHTML=`<button type="button" role="tab" class="new" data-t="novita" aria-selected="${!q&&tab==="novita"}">Novità</button>`+
-    years.map(y=>`<button type="button" role="tab" data-t="y${y}" aria-selected="${!q&&tab==="y"+y}">${y}</button>`).join("")+`<button type="button" role="tab" class="stat" data-t="people" aria-selected="${!q&&tab==="people"}">Partecipanti</button>`+`<button type="button" role="tab" class="stat" data-t="stats" aria-selected="${!q&&tab==="stats"}">Statistiche</button>`;
+    years.map(y=>`<button type="button" role="tab" data-t="y${y}" aria-selected="${!q&&tab==="y"+y}">${y}</button>`).join("");
+  $("#tabs-top").innerHTML=`<button type="button" role="tab" data-t="people" aria-selected="${!q&&tab==="people"}">Partecipanti</button><button type="button" role="tab" data-t="stats" aria-selected="${!q&&tab==="stats"}">Statistiche</button>`;
 }
 function render(){
   const q=$("#q").value.trim().toLowerCase();
@@ -322,7 +331,7 @@ function render(){
   }
   $("#out").innerHTML=h;
 }
-$("#tabs").addEventListener("click",ev=>{const b=ev.target.closest("button[data-t]");if(!b)return;tab=b.dataset.t;personSel=null;$("#q").value="";try{history.replaceState(null,"","#"+tab)}catch(e){}render();
+$(".tabs").addEventListener("click",ev=>{const b=ev.target.closest("button[data-t]");if(!b)return;tab=b.dataset.t;personSel=null;$("#q").value="";try{history.replaceState(null,"","#"+tab)}catch(e){}render();
   const top=$(".tabs").offsetTop;if(window.scrollY>top)window.scrollTo({top});b.scrollIntoView({block:"nearest",inline:"center"})});
 $("#out").addEventListener("click",ev=>{const a=ev.target.closest("a[data-jump]");if(!a)return;ev.preventDefault();const el=document.getElementById(a.dataset.jump);if(el)el.scrollIntoView({behavior:"smooth"})});
 $("#q").addEventListener("input",render);
