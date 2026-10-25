@@ -20,14 +20,16 @@ img{max-width:100%}[hidden]{display:none!important}body{margin:0}
   --olive:#56662a;       /* verde oliva */
   --olive-soft:#e6ebd3;
   --pen:#c62d23;         /* penna rossa del professore */
+  --v-ok:#2e7a35;        /* voto alto */
+  --v-mid:#a87300;       /* voto tra 6 e 8 */
   --line:#cfd6bb;
   --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --f-body:"Literata",Georgia,"Times New Roman",serif;
   --f-pen:"Caveat Brush","Comic Sans MS","Segoe Print",cursive;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#161a10;--grid:#20261a;--paper:#1e2416;--ink:#e9edd9;--muted:#a7b28c;--olive:#b5c77a;--olive-soft:#2b331f;--pen:#ff6b5e;--line:#353f27;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#161a10;--grid:#20261a;--paper:#1e2416;--ink:#e9edd9;--muted:#a7b28c;--olive:#b5c77a;--olive-soft:#2b331f;--pen:#ff6b5e;--line:#353f27;color-scheme:dark}
+  --bg:#161a10;--grid:#20261a;--paper:#1e2416;--ink:#e9edd9;--muted:#a7b28c;--olive:#b5c77a;--olive-soft:#2b331f;--pen:#ff6b5e;--line:#353f27;--v-ok:#7fcf84;--v-mid:#f0c04a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#161a10;--grid:#20261a;--paper:#1e2416;--ink:#e9edd9;--muted:#a7b28c;--olive:#b5c77a;--olive-soft:#2b331f;--pen:#ff6b5e;--line:#353f27;--v-ok:#7fcf84;--v-mid:#f0c04a;color-scheme:dark}
 
 *{box-sizing:border-box}
 body{
@@ -110,6 +112,14 @@ footer{color:var(--muted);font-size:.85rem;padding-block:0 40px}
 .tag{display:inline-block;font-family:var(--f-display);font-weight:800;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
 
 /* Statistiche */
+.season-head .badge{color:var(--paper)}
+.voto.v-ok{color:var(--v-ok);border-color:var(--v-ok)}
+.voto.v-mid{color:var(--v-mid);border-color:var(--v-mid)}
+.voto.v-ko{color:var(--pen);border-color:var(--pen)}
+table.pres td.v-ok{color:var(--v-ok);font-weight:700}
+table.pres td.v-mid{color:var(--v-mid);font-weight:700}
+table.pres td.v-ko{color:var(--pen);font-weight:700}
+
 .statbar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between;color:var(--muted);font-size:.85rem;margin-bottom:10px}
 .chk{display:flex;align-items:center;gap:8px;color:var(--ink);cursor:pointer}
 .chk input{width:18px;height:18px;accent-color:var(--olive)}
@@ -192,10 +202,11 @@ let tab="novita";
 try{const h=location.hash.slice(1);if(h==="novita"||h==="stats"||h==="people"||(/^y\d{4}$/.test(h)&&years.includes(h.slice(1))))tab=h}catch(e){}
 
 function hl(t,q){if(!q)return esc(t);const i=t.toLowerCase().indexOf(q);if(i<0)return esc(t);return esc(t.slice(0,i))+"<mark>"+esc(t.slice(i,i+q.length))+"</mark>"+esc(t.slice(i+q.length))}
+function band(v){return v===null||v===undefined?"":v<6?"v-ko":v<8?"v-mid":"v-ok"}
 function card(e,q,showDate){
   const ph=e.photo?`<button type="button" class="ph" data-src="foto/${e.photo}" data-cap="${esc(e.name)} · ${esc(e.voto)}" aria-label="Foto di ${esc(e.name)}"><img loading="lazy" src="foto/${e.photo}" alt="${esc(e.name)}"></button>`:`<div class="noph" aria-hidden="true">${esc(e.name.slice(0,1))}</div>`;
   return `<article class="card${isProf(e)?" prof":""}${e.photo?"":" textonly"}">${ph}<div class="body">
-    <div class="who"><h4>${showDate?`<span class="tag">${fmt(e.date)}</span><br>`:""}<button type="button" class="pl" data-p="${esc(canon(e))}">${hl(e.name,q)}</button></h4><div class="voto${e.voto.length>7?" long":""}">${esc(e.voto)}</div></div>
+    <div class="who"><h4>${showDate?`<span class="tag">${fmt(e.date)}</span><br>`:""}<button type="button" class="pl" data-p="${esc(canon(e))}">${hl(e.name,q)}</button></h4><div class="voto${e.voto.length>7?" long":""} ${band(votoNum(e.voto,e))}">${esc(e.voto)}</div></div>
     <p class="text">${hl(e.text,q)}</p>
     ${e.title?`<div class="stamp">${hl(e.title,q)}</div>`:""}
   </div></article>`;
@@ -233,7 +244,7 @@ function renderStats(){
   h+=`<div class="statbar"><span>Ordina toccando le intestazioni della tabella.</span><label class="chk"><input type="checkbox" id="statall" ${statAll?"checked":""}> Mostra anche chi ha meno di 3 presenze</label></div>`;
   h+=`<div class="tablewrap"><table class="pres"><thead><tr><th class="n"><button type="button" class="sort" data-sort="n">Nome${arr("n")}</button></th>${ys.map(y=>`<th>${y}</th>`).join("")}<th class="n"><button type="button" class="sort" data-sort="tot">Presenze${arr("tot")}</button></th><th><button type="button" class="sort" data-sort="avg">Media${arr("avg")}</button></th></tr></thead><tbody>`;
   for(const r of vis){
-    h+=`<tr${r.n==="Matte"?' class="prof"':""}><td class="n">${esc(r.n)}</td>${ys.map(y=>`<td${r.by[y]?"":' class="z"'}>${r.by[y]||"·"}</td>`).join("")}<td class="tot"><span class="bar" style="width:${Math.round(90*r.tot/maxT)}px"></span>${r.tot}</td><td>${f1(r.avg)}</td></tr>`;
+    h+=`<tr${r.n==="Matte"?' class="prof"':""}><td class="n">${esc(r.n)}</td>${ys.map(y=>`<td${r.by[y]?"":' class="z"'}>${r.by[y]||"·"}</td>`).join("")}<td class="tot"><span class="bar" style="width:${Math.round(90*r.tot/maxT)}px"></span>${r.tot}</td><td class="${band(r.avg)}">${f1(r.avg)}</td></tr>`;
   }
   h+=`</tbody></table></div><p class="statnote">${statAll?"":`Sono nascosti ${rows.length-vis.length} partecipanti con meno di 3 presenze. `}Una presenza è una giornata con la pagella; i weekend raccontati in un unico Pagellino contano come una giornata. Nel 2022 e nel 2023 i Pagellini coprono solo due giornate per stagione. Media: + e − valgono un quarto di voto, i voti oltre il 10 contano per intero (10+3+3 vale 16), i voti in trentesimi sono riportati in decimi. Media più alta e fanalino di coda considerano chi ha almeno 3 presenze.</p>`;
   return h;
